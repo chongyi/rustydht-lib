@@ -561,7 +561,7 @@ impl DHT {
         };
         let mut state = self.state.lock().unwrap();
         state.subscribers.retain(|sub| {
-            eprintln!("Gotta do notifications for {:?}", event);
+            trace!("Gotta do notifications for {:?}", event);
             match sub.try_send(event.clone()) {
                 Ok(()) => true,
                 Err(e) => match e {
