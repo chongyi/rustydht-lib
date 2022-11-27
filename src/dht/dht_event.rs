@@ -1,9 +1,12 @@
+use std::net::SocketAddr;
+
 use crate::packets::Message;
 
 /// Top-level message that [DHT](crate::dht::DHT) will send to callers that
 /// [subscribe](crate::dht::DHT::subscribe) to events.
 #[derive(Debug, PartialEq, Clone)]
 pub struct DHTEvent {
+    pub address: SocketAddr,
     pub event_type: DHTEventType,
 }
 

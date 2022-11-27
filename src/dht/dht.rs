@@ -45,6 +45,7 @@ struct DHTState {
 }
 
 /// This struct is the heart of the library - contains data structure and business logic to run a DHT node.
+#[derive(Clone)]
 pub struct DHT {
     socket: Arc<DHTSocket>,
 
@@ -554,9 +555,10 @@ impl DHT {
         Ok(())
     }
 
-    async fn send_packet_to_subscribers(&self, msg: packets::Message, _addr: SocketAddr) {
+    async fn send_packet_to_subscribers(&self, msg: packets::Message, address: SocketAddr) {
         // Notify any subscribers about the event
         let event = DHTEvent {
+            address,
             event_type: DHTEventType::MessageReceived(MessageReceivedEvent { message: msg }),
         };
         let mut state = self.state.lock().unwrap();
