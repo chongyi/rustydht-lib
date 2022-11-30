@@ -28,3 +28,6 @@ pub mod shutdown; // TODO move this into common?
 
 /// Data structures used in the DHT - node buckets, peer storage, etc.
 pub mod storage;
+
+/// Peer binary protocal
+pub mod peer_binary_protocol;

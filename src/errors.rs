@@ -38,3 +38,21 @@ pub enum RustyDHTError {
     #[error("Builder state invalid: {0}")]
     BuilderInvalidComboError(&'static str),
 }
+
+#[derive(Debug)]
+pub enum MessageDeserializeError {
+    NotEnoughData(usize, &'static str),
+    UnsupportedMessageId(u8),
+    IncorrectLenPrefix {
+        received: u32,
+        expected: u32,
+        msg_id: u8,
+    },
+    OtherBincode {
+        error: bincode::Error,
+        msg_id: u8,
+        len_prefix: u32,
+        name: &'static str,
+    },
+    Other(anyhow::Error),
+}

@@ -4,6 +4,7 @@ extern crate crc;
 use crc::crc32;
 
 use rand::prelude::*;
+use serde::{Deserialize, Deserializer, Serialize};
 
 use std::convert::TryInto;
 use std::net::IpAddr;
@@ -17,7 +18,7 @@ pub const ID_SIZE: usize = 20;
 /// 20-byte identifier.
 #[derive(Eq, PartialEq, Hash, Copy, Clone)]
 pub struct Id {
-    bytes: [u8; ID_SIZE],
+    pub(crate) bytes: [u8; ID_SIZE],
 }
 
 impl Id {
@@ -179,6 +180,62 @@ impl PartialOrd for Id {
         }
 
         Some(std::cmp::Ordering::Equal)
+    }
+}
+
+impl Serialize for Id {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        serializer.serialize_bytes(&self.bytes)
+    }
+}
+
+impl<'de> Deserialize<'de> for Id {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        struct Visitor;
+        impl<'de> serde::de::Visitor<'de> for Visitor {
+            type Value = Id;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+                write!(formatter, "a 20 byte slice or a 40 byte string")
+            }
+            fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                if v.len() != 40 {
+                    return Err(E::invalid_length(40, &self));
+                }
+                let mut out = [0u8; 20];
+                match hex::decode_to_slice(v, &mut out) {
+                    Ok(_) => Ok(Id { bytes: out }),
+                    Err(e) => Err(E::custom(e)),
+                }
+            }
+            fn visit_borrowed_bytes<E>(self, v: &'de [u8]) -> Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                self.visit_bytes(v)
+            }
+            fn visit_bytes<E>(self, v: &[u8]) -> Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                if v.len() != 20 {
+                    return Err(E::invalid_length(20, &self));
+                }
+                let mut buf = [0u8; 20];
+                buf.copy_from_slice(v);
+                Ok(Id { bytes: buf })
+            }
+        }
+        deserializer.deserialize_any(Visitor {})
     }
 }
 
