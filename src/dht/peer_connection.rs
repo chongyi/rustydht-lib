@@ -6,7 +6,7 @@ use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
 use crate::{
     common::{try_decode_peer_id, Id},
-    peer_binary_protocol::{Handshake, PIECE_MESSAGE_DEFAULT_LEN},
+    peer_binary_protocol::{Handshake, PIECE_MESSAGE_DEFAULT_LEN, extended::handshake::ExtendedHandshake},
 };
 
 pub async fn read_metainfo_from_peer(
@@ -68,6 +68,10 @@ pub async fn read_metainfo_from_peer(
     // must support extended protocol
     if supports_extended {
         // extended handshake
+        let extended_handshake = ExtendedHandshake::new();
+        log::trace!("sending extended handshake to {peer_addr}: {extended_handshake:?}");
+
+        
     }
 
     Ok(())
